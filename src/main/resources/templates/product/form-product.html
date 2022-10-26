@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Formulário de Produto</title> 
+    <th:block th:replace="/fragment/pattern-head :: pattern-head"></th:block>
+    <link rel="stylesheet" th:href="@{/plugins/datepicker/css/bootstrap-datepicker.min.css}">
+</head>
+<body> 
+	<th:block th:replace="/fragment/top-menu :: top-menu"></th:block>
+	<div class="container">
+		<div class="card-box">
+			<h2 th:unless="${product.id}">Novo Produto</h2>
+			<h2 th:if="${product.id}">Editar Produto</h2>
+			<form  class="form-group m-t-20" th:action="@{'/product/save'}" th:object="${product}" method="post">
+				<input hidden="text" th:field="${product.id}">
+				<div class="row form-group  m-b-20">
+					<div class="col-xs-6 required-flag">
+						<label>Descrição: </label> 
+							<input type="text"  class="form-control" th:field="${product.description}" required="required">
+					</div>
+					<div class="col-xs-6 required-flag">
+						<label>Fornecedor: </label> 
+						<input type="text"  class="form-control" th:field="${product.provider}">
+					</div>
+				</div>
+				<div class="row form-group">
+					<div class="col-xs-6 required-flag">
+						<label>Quantidade atual: </label> 
+							<input type="number" min="0" maxlength="15" class="form-control" th:field="${product.currentQuantity}" required="required">
+					</div>
+					<div class="col-xs-6 required-flag">
+						<label>Quantidade para alerta: </label> 
+						<input type="number" min="0"  maxlength="15"  class="form-control" th:field="${product.alertQuantity}">
+					</div>
+				</div>
+				<div class="row form-group">
+					<div class="col-xs-6 required-flag">
+						<label>Código de Barras </label> 
+						<input th:if="${edit}" type="text" class="form-control" required="required" th:field="${product.barcode}">
+						<input th:unless="${edit}" onchange="verifyBarcode()" type="text" class="form-control" required="required" th:field="${product.barcode}">
+						<span class="erro" id="erroBarCode"></span>
+					</div>
+					<div class="col-xs-6 required-flag">
+						<label>Validade: </label> 
+						<input type="text" class="form-control datepicker" placeholder="dd/mm/aaaa" th:id="svalidity" required="required"  th:name="svalidity" th:value="${@convertDate.LocalDateTimeToString(product.validity, 'dd/MM/yyyy')}">
+					</div>
+				</div>
+				<div class="row form-group">
+					<div class="col-xs-5 required-flag">
+						<label> Preço de revenda: </label> 
+						<input type="text"  onkeyup="calcGain()" class="form-control" maxlength="10" th:field="${product.price}" required="required">
+					</div>
+					<div class="col-xs-5 required-flag">
+						<label> Preço de compra: </label> 
+						<input type="text" onkeyup="calcGain()" class="form-control" maxlength="10" th:field="${product.truePrice}" required="required">
+					</div>
+					<div class="col-xs-2">
+						<label> Lucro: </label> 
+						<input type="text" readonly="readonly" class="form-control" maxlength="10" th:field="${product.gain}" required="required">
+					</div>
+				</div>
+				<button class="btn btn-login m-t-20" type="submit">Enviar</button>
+			</form>
+		</div>
+	</div>
+	<th:block th:replace="/fragment/pattern-body :: pattern-body"></th:block>
+	<script type="text/javascript" th:src="@{/custom/js/jquery.mask.js}"></script>
+	<script th:src="@{/plugins/datepicker/js/bootstrap-datepicker.min.js}"></script>
+	<script type="text/javascript" th:inline="javascript">
+		$(function(){
+			$.fn.datepicker.dates['pt'] = {
+					days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"],
+					daysShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
+					daysMin: ["Do", "Sg", "Te", "Qa", "Qi", "Sx", "Sa", "Do"],
+					months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+					monthsShort: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+					today: "Hoje",
+					clear: "Limpar",
+				    format: "dd/mm/yyyy",
+				    titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+				    weekStart: 0
+				};
+			
+			$('#price').mask("#.##0,00", {reverse: true});
+			$('#truePrice').mask("#.##0,00", {reverse: true});
+			$('#gain').mask("#.##0,00", {reverse: true});
+			$("#svalidity").datepicker({
+		    	language: 'pt-BR',
+		        autoclose: true,
+		        todayHighlight: true,
+		        startDate: new Date(),
+		        endDate: '+10y'
+		    });
+			
+			calcGain()
+			$("#barcode").on("focus", function(){
+				$("#erroBarCode").text("")
+			})
+		})
+		
+		$(document).on("submit", function(){
+			
+			
+			var price = $('#price').val();
+			price = price.split(".").join("");
+			price = price.replace(",", ".");
+			$('#price').val(price);
+			
+			var trueprice = $('#truePrice').val();
+			trueprice = trueprice.split(".").join("");
+			trueprice = trueprice.replace(",", ".");
+			$('#truePrice').val(trueprice);
+		})
+		
+		function verifyBarcode(){
+			var val = $("#barcode").val();
+			if(val != ""){
+				$.ajax({
+					url:[[@{'/product/verify/barcode/'}]]+val,
+					success:function(result){
+						if(result == "true"){
+							$("#erroBarCode").text("Esse código de barras já existe")
+							$("#barcode").val("");
+						}
+					}
+				})
+			}
+		}
+		function calcGain(){
+			var price = $('#price').val();
+			price = price.split(".").join("");
+			price = price.replace(",", ".");
+			if(price == ""){
+				price = "0";
+			}
+			
+			var trueprice = $('#truePrice').val();
+			trueprice = trueprice.split(".").join("");
+			trueprice = trueprice.replace(",", ".");
+			if(trueprice == ""){
+				trueprice = "0";
+			}
+			
+			$.ajax({
+				url:[[@{'/product/calc/gain/'}]]+price+"/"+trueprice,
+				success:function(result){
+					$("#gain").val(result);
+				}
+			})
+		}
+		
+	</script>
+</body>
+</html>

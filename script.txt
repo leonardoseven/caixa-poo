@@ -1,0 +1,44 @@
+create database caixa;
+use caixa;
+create table tbuser(
+	 id int PRIMARY KEY AUTO_INCREMENT NOT NUll, 
+	 name varchar(50) NOT NULL,
+	 email varchar(60) UNIQUE NOT NULL,
+	 password varchar(150) NOT NULL, 
+	 role varchar (30) NOT NULL,
+	 active int(2)
+);
+create table tbrole ( role varchar(30) PRIMARY KEY );
+
+ALTER table tbuser add CONSTRAINT fktbrole01 FOREIGN KEY (role) REFERENCES tbrole(role);
+
+Insert into tbrole (role) value('ROLE_ADMIN'), ('ROLE_USER');
+
+/*usuario:admin   senha:1234*/
+insert into tbuser (name, email,password, role,active) value ('admin','admin@admin','$2a$12$Iv.b8tKbShQ7os8.tTXDueFYpCSRkwyaqfwXt9lVwZ1a5AcSNlVKu', 'ROLE_ADMIN',1);
+
+create table tbproduct (
+	 id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+	 description varchar(60) not null, 
+	 provider varchar(60),
+	 currentquantity int(100) not null,
+	 alertquantity int(20),
+	 validity timestamp not NULL,
+	 price numeric(10,2) not null,
+	 trueprice numeric(10,2) not null,
+	 gain varchar(100),
+	 barcode varchar(150) UNIQUE not null,
+	 active int(2)
+);
+
+create TABLE tbsales ( id int PRIMARY KEY NOT null AUTO_INCREMENT, now timestamp not null, username varchar(50), total varchar(50), formpayment varchar(30) );
+
+create TABLE tbsalesxproduct ( id int PRIMARY KEY NOT null AUTO_INCREMENT,
+                             idsale varchar(10),
+                             idproduct varchar(10),
+                             quantity varchar(30)
+                             );
+
+
+ALTER TABLE tbsales add COLUMN desconto varchar(255);
+

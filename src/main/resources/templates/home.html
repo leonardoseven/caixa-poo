@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+    	<title>Home</title>
+		<th:block th:replace="/fragment/pattern-head :: pattern-head"></th:block>
+
+    </head>
+	<body> 
+		<th:block th:replace="/fragment/top-menu :: top-menu"></th:block>
+		<div class="container">
+			<div class="card-box row">
+				<div th:if="${lowQuantity.size()} eq 0 ">
+					<div th:if="${validity.size()} eq 0">
+						<h3 class="text-muted">Nenhum alerta</h3>
+					</div>
+				</div>
+				<div th:if="${lowQuantity.size()} > 0">
+					<h3 class="text-muted">Alerta de quantidade!</h3>
+					<div  style="cursor:pointer" th:each="product : ${lowQuantity}" th:data-url="@{/product/edit/}+${product.id}" th:onclick="window.location.href=this.getAttribute('data-url')">
+						<div class="alert alert-danger alert-dismissible fade in" role="alert">
+	                        <strong th:text="${product.description}+@{' está com '}+${product.currentQuantity}+@{' unidades'}">Oh snap!</strong> 
+	                        
+	                    </div>
+					</div>
+				</div>
+				<div th:if="${validity.size()} > 0">
+					<h3 class="text-muted">Alerta de validade!</h3>
+					<div  style="cursor:pointer" th:each="product : ${validity}" th:data-url="@{/product/edit/}+${product.id}" th:onclick="window.location.href=this.getAttribute('data-url')">
+						<div class="alert alert-danger alert-dismissible fade in" role="alert">
+	                        <strong th:text="${product.description}">Oh snap!</strong> 
+	                       
+	                    </div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+		<th:block th:replace="/fragment/pattern-body :: pattern-body"></th:block>
+	</body>
+</html>

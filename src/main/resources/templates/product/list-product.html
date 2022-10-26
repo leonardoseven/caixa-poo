@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Lista de Produtos</title>
+        <th:block th:replace="/fragment/pattern-head :: pattern-head"></th:block>
+        <style>
+        	#table{
+        		width: 100%;
+        	}
+        	#table td{
+        		padding:10px;
+        	}
+        	#table th{
+        		padding:10px;
+        	}
+        </style>
+    </head>
+    <body>
+		<th:block th:replace="/fragment/top-menu :: top-menu"></th:block>
+		<div class="card-box">
+			<div class="row container">
+				<h2>Lista Produtos</h2>
+				<div class="m-b-20 row">
+					<div class="col-xs-6">
+						<label>Buscar:</label>
+						<input id="myInput" type="text" class="form-control">
+					</div>
+					<div class="col-xs-6">
+						<button id="btn-gain" class="btn logus" style="color:#FFF; float:right" onclick="showGain()">Mostrar lucro</button>
+					</div>
+				</div>
+				<table id="table" class="table-bordered">
+					<thead class="logus" style="color:#FFF">
+						<tr>
+							<th class="col-xs-1 text-center">Descrição</th>
+							<th class="col-xs-1 text-center">Fornecedor</th>
+							<th class="col-xs-1 text-center">Quantidade atual</th>
+							<th class="col-xs-1 text-center">Quantidade para alerta</th>
+							<th class="col-xs-1 text-center">Preço revenda</th>
+							<th class="col-xs-1 text-center">Validade</th>
+							<th class="col-xs-2 text-center">Código de Barras</th>
+							<th class="col-xs-1 text-center">Editar</th>
+							<th class="col-xs-1 text-center">Excluir</th>
+							<th id="gain" style="color:#FFF" class="col-xs-1 logus text-center invisible">Lucro</th>
+						</tr>
+					</thead>
+					<tbody id="myTable">
+						<tr  th:if="${listProduct}" th:each=" product : ${listProduct}" th:id="${product.id}">
+							<td class="col-xs-2 text-center" th:text="${product.description}"></td>
+							<td class="col-xs-1 text-center" th:text="${product.provider}"></td>
+							<td class="col-xs-1 text-center" th:text="${product.currentQuantity}"></td>
+							<td class="col-xs-1 text-center" th:text="${product.alertQuantity}"></td>
+							<td class="col-xs-1 text-center" th:text="${'R$: '}+${@convertMoney.BigDecimalToString(product.price)}"></td>
+							<td class="col-xs-1 text-center" th:text="${@convertDate.LocalDateTimeToString(product.validity, 'dd/MM/yyyy')}"></td>
+							<td class="col-xs-2 text-center" th:text="${product.barcode}"></td>
+							<td class="col-xs-1 text-center"><a th:href="@{'/product/edit/'}+${product.id}">Editar</a></td>
+							<td class="col-xs-1 text-center"><a th:href="@{'/product/delete/'}+${product.id}">Excluir</a></td>
+							<td class="col-xs-1 text-center invisible gain2" th:text="${'R$: '}+${product.gain}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<th:block th:replace="/fragment/pattern-body :: pattern-body"></th:block>
+		<script type="text/javascript">
+			$(document).ready( function () {
+				$("#myInput").on("keyup", function() {
+				   var value = $(this).val().toLowerCase();
+				   $("#myTable tr").filter(function() {
+				     $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+				   });
+				});
+			});
+			
+			function showGain(){
+				if($("#gain").hasClass("invisible")){
+					$("#gain").removeClass("invisible");
+					$(".gain2").each(function(){
+						$(this).removeClass("invisible");
+					})
+					$("#btn-gain").text("Esconder lucro")
+					
+				}else{
+					$("#gain").addClass("invisible");
+					$(".gain2").each(function(){
+						$(this).addClass("invisible");
+					})
+					$("#btn-gain").text("Mostrar lucro");
+				}
+			}
+			
+		</script>
+    </body>
+</html>

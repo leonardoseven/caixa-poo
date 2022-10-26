@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+	<th:block th:fragment="top-menu">		
+		<div class="container">
+			<div class=" row header fz logus">
+				<div class="col-xs-2">
+				<div class="text-center logus">
+                         <img th:src="@{'/custom/images/logo.jpg'}" alt="" height="50">
+                   </div>
+				</div>
+				<div class="col-xs-3">
+					<div class="col-xs-2">
+						<label>Olá!</label>					
+					</div>
+					<div class="col-xs-6">
+						<label th:text="${@userlogged.name}"></label>
+					</div>
+					<div class="col-xs-1">
+						<a class="btn" style="font-size:20px" th:href="@{'/login/logout'}">Sair  <i class=" mdi mdi-exit-to-app"></i></a>
+					</div>
+				</div>
+				<div class="menu col-xs-6">
+					<div class="col-xs-2"><a class="fz btn" th:href="@{'/home'}">Home</a></div>
+					<div class="col-xs-3"  th:if="${@userlogged.role} eq 'ROLE_ADMIN'">
+						<a class=" fz btn dropdown-toggle" href="user"  data-toggle="dropdown">Usuário  <span class="caret"></span></a>
+					    <ul id="user" class="dropdown-menu">
+					     	<li><a class="fz" th:href="@{'/user/new'}"> Novo usuário</a></li>
+							<li><a class="fz" th:href="@{'/user/list'}"> Listar usuário</a></li>
+					    </ul>
+					</div>
+					<div class="col-xs-3"  th:if="${@userlogged.role} eq 'ROLE_ADMIN'">
+						<a class=" fz btn dropdown-toggle" href="prod" data-toggle="dropdown">Produtos  <span class="caret"></span></a>
+					    <ul id="prod" class="dropdown-menu">
+					     	<li><a class="fz" th:href="@{'/product/new'}"> Novo produtdo</a></li>
+							<li><a class="fz" th:href="@{'/product/list'}"> Listar produto</a></li>
+						</ul>
+					</div>
+					<div class="col-xs-2"><a class="fz btn" th:href="@{'/cashier'}">Caixa</a></div>
+					<div class="col-xs-2" th:if="${@userlogged.role} eq 'ROLE_ADMIN'"><a class="fz btn" th:href="@{'/sales'}">Vendas</a></div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+</html>

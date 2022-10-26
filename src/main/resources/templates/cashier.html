@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+	    <title>Caixa</title> 
+		<th:block th:replace="/fragment/pattern-head :: pattern-head"></th:block>
+		<link rel="stylesheet" th:href="@{/plugins/switchery/switchery.min.css}">
+		<link rel="stylesheet" th:href="@{/plugins/toastr/css/toastr.css}">
+		<link rel="stylesheet" th:href="@{/plugins/bootstrap-select/css/bootstrap-select.min.css}">
+		<style>
+			body{
+				background-color:#DDD;
+				padding:0px !important;
+			}
+			.container-flex{
+				display: flex;
+				margin-top: 10px;
+				justify-content: space-around;
+			}
+			.container-item{
+				height: inherit;
+				flex: 24;
+			}
+		</style>
+    </head>
+    <body>
+    <div class="modal fade" id="cartao" role="dialog">
+		  <div class="modal-dialog">
+		    <!-- Modal content-->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button id="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+		        <div class="row">
+		        	<div class="col-xs-6">
+		        		<h4 class="m-t-20">Forma de pagamento cartão</h4>
+		        	</div>
+		        	<div class="col-xs-6">
+			        	<div class="col-xs-6">
+			        		<input type="radio" class="card-pay-type" id="debito" name="cartao" checked="checked" value="débito">
+					  		<label for="debito">Débito</label><br>
+			        	</div>
+			        	<div class="col-xs-6">
+			        		<input type="radio"  class="card-pay-type" id="credito" name="cartao" value="crédito">
+					  		<label for="credito">Crédito</label><br>
+			        	</div>
+		        	</div>
+		        </div>
+		      </div>
+		      <div class="modal-body">
+		        <div id="cartao-body" class="custom-modal-text">
+		        	<h3>Valor Total</h3>
+		        	<div class="row">
+		        		<div class="col-xs-5">
+		        			<h1 class="total-pagamento">R$ 00,00</h1>
+		        		</div>
+		        		<div class="col-xs-2">
+		        			<h1 class="total-desconto" style="display:none">=></h1>
+		        		</div>
+		        		<div class="col-xs-5 total-desconto" style="display:none">
+			        		<h1 class="desconto-val">R$ 0</h1>
+		        		</div>
+		        	</div>
+		        	<div class="row">
+			        	<div class="col-xs-6">
+			        		<label>Desconto</label>
+			        		<input type="text" min="1" max="9" onblur="resetDesconto(this)" class="form-control desconto">
+			        	</div>
+			        	<div class="col-xs-2">
+	        				<button style="margin-top: 25px;color:#FFF" class="btn logus" onclick="calcDesconto(this)">Aplicar</button>
+	        			</div>
+		        	</div>
+		        	<div class="row m-t-20">
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-success" style="width:100%" th:attrappend="data-url=@{'/cashier/finish'}, data-payment=${'Cartão'}, data-print=${'1'}" onclick="done(this)" >Finalizar compra e imprimir</button>
+		        		</div>
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-success" style="width:100%" th:attrappend="data-url=@{'/cashier/finish'}, data-payment=${'Cartão'}, data-print=${'0'}" onclick="done(this)" >Finalizar compra</button>
+		        		</div>
+		        	</div>
+		        	<div class="row m-t-20">
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-danger"  style="width:100%" th:data-url="@{/cashier/cancel}" th:onclick="window.location.href=this.getAttribute('data-url')" >Cancelar compra</button>
+		        		</div>
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-inverse" style="width:100%" type="button" data-dismiss="modal">Voltar</button>
+		        		</div>
+		        	</div>
+		        </div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		 <div class="modal fade" id="money" role="dialog">
+		  <div class="modal-dialog">
+		    <!-- Modal content-->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button id="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+		        <h4 class="modal-title">Forma de pagamento dinheiro</h4>
+		      </div>
+		      <div class="modal-body">
+		        <div id="money-body" class="custom-modal-text">
+		        	<h3>Valor Total</h3>
+		        	<div class="row">
+		        		<div class="col-xs-5">
+		        			<h1 class="total-pagamento">R$ 00,00</h1>
+		        		</div>
+		        		<div class="col-xs-2">
+		        			<h1 class="total-desconto" style="display:none">=></h1>
+		        		</div>
+		        		<div class="col-xs-5 total-desconto" style="display:none">
+			        		<h1 class="desconto-val">R$ 0</h1>
+		        		</div>
+		        	</div>
+		        	<div class="row">
+			        	<div class="col-xs-6">
+			        		<label>Desconto</label>
+			        		<input type="text" min="1" max="9" onblur="resetDesconto(this)" class="form-control desconto">
+			        	</div>
+			        	<div class="col-xs-2">
+	        				<button style="margin-top: 25px;color:#FFF" class="btn logus" onclick="calcDesconto(this)">Aplicar</button>
+	        			</div>
+		        	</div>
+		        	<div class="row">
+		        		<h4>Valor recebido</h4>
+		        		<input id="truePrice" type="text" min="1" max="9" onkeyup="calcGain(this)" class="form-control">
+		        	</div>
+		        	<div class="row">
+		        		<h3>Troco</h3>
+		        		<h1 id="gain"></h1>
+		        	</div>
+		        	<div class="row m-t-20">
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-success" style="width:100%" th:attrappend="data-url=@{'/cashier/finish'}, data-payment=${'Dinheiro'}, data-print=${'1'}" onclick="done(this)" >Finalizar compra e imprimir</button>
+		        		</div>
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-success"style="width:100%"  th:attrappend="data-url=@{'/cashier/finish'}, data-payment=${'Dinheiro'}, data-print=${'0'}" onclick="done(this)" >Finalizar compra</button>
+		        		</div>
+		        	</div>
+		        	<div class="row m-t-20">
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-danger" style="width:100%"  th:data-url="@{/cashier/cancel}" th:onclick="window.location.href=this.getAttribute('data-url')" >Cancelar compra</button>
+		        		</div>
+		        		<div class="col-xs-6">
+		        			<button class="btn btn-inverse" style="width:100%" type="button" data-dismiss="modal">Voltar</button>
+		        		</div>
+		        	</div>
+		        </div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+    	<div  class="container-flex">
+    	<div style="flex:1"></div>
+    		<div class="container-item">
+    			<div class="panel panel-color">
+	                <div  style="padding-bottom: 30px;" class="panel-heading logus">
+		                <div style="float:left;">
+		                	 <h3 class="panel-title" th:text="${'Usuário: '}+${@userlogged.name}"></h3>
+		                </div>
+		                 <div style="float:right;">
+		                	 <h3 class="panel-title"><a th:href="@{'/home'}">Sair  <i class=" mdi mdi-exit-to-app"></i></a></h3>
+		                </div>
+	                </div>
+            	</div>
+            	<div class="panel panel-color " style="height: 53%;margin-bottom: 4%;">
+	                <div class="panel-heading logus">
+	                    <h3 class="panel-title">Registrar produto</h3>
+	                </div>
+	                <div class="panel-body">
+	                   <div class="row" style="margin-bottom:30px">
+	                   		<div class="col-xs-4">
+	                   			<label>Quantidade</label>
+	                   			<input id="quantity" type="number" min="1" class="form-control" value="1">
+	                   		</div>
+	                   		<div class="col-xs-8">
+	                   			<label>Código de barras</label>
+	                   			<input id="barcode" type="text" class="form-control">
+	                   		</div>
+	                   </div>
+	                  <div class="row" th:if="${listProd}">
+	                   		<div class="col-xs-4">
+	                   			<label style="padding-top:10px">Buscar Produto</label>
+	                   		</div>
+	                   		<div class="col-xs-8">
+	                   			<select class="selectpicker form-control" onchange="setProduct()" data-size="auto" data-live-search="true" data-style="btn-default"> 
+	                   				<option th:value="...">Selecione</option>
+	                   				<option th:each="prod : ${listProd}" th:value="${prod.barcode}" th:text="${prod.description}"></option>
+	                   			</select>
+	                   		</div>
+	                   </div>
+	                    <div class="row">
+	                    	<h2 id="description">Nome do Produto</h2>
+	                    </div>
+	                    <div class="row">
+	                    	<div class="col-xs-4">
+	                    		<label>Valor unitário</label>
+	                    		<h3 id="single-price">R$ 00,00</h3>
+	                    	</div>
+	                    	<div class="col-xs-4">
+	                    		<label>Quantidade</label>
+	                    		<h3 id="total-quantity">x 1</h3>
+	                    	</div>
+	                    	<div class="col-xs-4">
+	                    		<label>Total</label>
+	                    		<h3 id="total-price">R$ 00,00</h3>
+	                    	</div>
+	                    </div>
+	                </div>
+            	</div>
+            	<div class="panel panel-color" style="height: 31%; margin-bottom: 4%;">
+	                <div class="panel-heading logus">
+	                    <h3 class="panel-title">Menu</h3>
+	                </div>
+	                <div class="panel-body">
+	                   <div class="row">
+	                   		<div class="col-xs-2">
+	                   			<label>Atalhos:</label>
+	                   		</div>
+	                   		<div class="col-xs-5">
+	                   			<label>F4 : quantidade</label>
+	                   		</div>
+	                   		<div class="col-xs-5">
+	                   			<label>F8 : código de barras</label>
+	                   		</div>
+	                   </div>
+	                   <div class="row">
+	                   		<h2>Forma de Pagamento</h2>
+	                   </div>
+	                   <div class="row">
+	                   		<div class="col-xs-2">
+	                   			<button data-toggle="modal" data-target="#cartao" class="btn btn-warning"><i  style="font-size:20px;"class="mdi mdi-credit-card"> Cartão</i></button> 
+	                   		</div>
+	                   		<div class="col-xs-1"></div>
+	                   		<div class="col-xs-2">
+	                   			<button data-toggle="modal" data-target="#money" class="btn btn-success"><i  style="font-size:20px;"class="mdi mdi-cash-100"> Dinheiro</i></button>
+	                   		</div>
+	                   </div>
+	                </div>
+            	</div>
+    		</div>
+    		<div style="flex:2"></div>
+    		<div class="container-item">
+    			<div class="panel panel-color">
+	                <div class="panel-heading logus">
+	                    <h3 class="panel-title">Lista de Produtos</h3>
+	                </div>
+	                <div style="height: 87.5vh;"class="panel-body">
+	                   <div class="row" id="list-product-scroll" style="height:90%; overflow-y: scroll">
+	                   		<table class="table table-bordered table-stripped">
+	                   			<thead class="logus" style="color:#FFF">
+	                   				<tr>
+	                   					<th class="col-xs-1 text-center">#</th>
+	                   					<th class="col-xs-4 text-center">Produto</th>
+	                   					<th class="col-xs-2 text-center" >Unitário</th>
+	                   					<th class="col-xs-1 text-center">Quantidade</th>
+	                   					<th class="col-xs-2 text-center">Total</th>
+	                   					<th class="col-xs-2 text-center">Excluir</th>
+	                   				</tr>
+	                   			</thead>
+	                   			<tbody id="list-products">
+											      			
+	                   			</tbody>
+	                   		</table>
+	                   </div>
+	                   <div class="row logus" style="border-radius:5px">
+	                   		<div style="float:left">
+	                   			<h1 style="color:white; margin-left:5px">Total:</h1>
+	                   		</div>
+	                   		<div style="float:right">
+	                   			<h1 style="color:white;margin-right:5px" id="total"></h1>
+	                   		</div>
+	                   </div>
+	                </div>
+            	</div>
+    		</div>
+    		<div style="flex:1"></div>
+    	</div>
+    	<form th:id="form"  th:method="Post" th:object="${sold}">
+    		<input type="hidden" th:name="list" th:field="${sold.list}">
+    		<input type="hidden" th:id="total-payment" th:field="${sold.total}">
+    		<input type="hidden" th:field="${sold.print}">
+    		<input type="hidden" th:field="${sold.desconto}">
+    		<input type="hidden" th:field="${sold.formPayment}">
+    	</form>
+		<th:block th:replace="/fragment/pattern-body :: pattern-body"></th:block>
+		<script th:src="@{/plugins/switchery/switchery.min.js}"></script>
+		<script th:src="@{/plugins/toastr/js/toastr.js}"></script>
+		<script th:src="@{/plugins/bootstrap-select/js/bootstrap-select.min.js}"></script>
+		<script type="text/javascript" th:src="@{/custom/js/jquery.mask.js}"></script>
+		<script type="text/javascript" th:inline="javascript">
+		var cancel = [[${cancel}]]
+		var finish = [[${finish}]]
+		var ok = "";
+		var contador = 1;
+		
+		if(cancel != null){
+			toastr.success('Compra cancelada com sucesso')
+		}
+		
+
+		if(finish != null){
+			toastr.success('Compra finalizada com sucesso')
+		}
+		
+			$(document).on("keydown", function(e){
+				if(e.keyCode == 116){
+					e.preventDefault();
+				}
+			});
+			$(document).on("keyup", function(e){
+				if(e.keyCode == 13){
+					var barcode = $("#barcode").val();
+					if(barcode  != ""){
+						$("#barcode").blur();
+					}
+					$("#barcode").focus();
+				}
+				if(e.keyCode == 115){
+					$("#quantity").val("");
+					$("#quantity").focus();
+				}
+				
+				if(e.keyCode == 119){
+					$("#barcode").focus();
+				}
+			})
+		
+			$(window).on('shown.bs.modal', function() { 
+				$("#truePrice").val("");
+				$("#gain").text("R$: 00,00");
+				$("#truePrice").focus();
+			});
+			
+			$(window).on('hidden.bs.modal', function() { 
+				$(".desconto").each(function(){
+					$(this).val("");
+				})
+				$(".desconto-val").text("R$ 0");
+				$(".total-desconto").css("display","none")
+				$("#barcode").focus();
+			});
+			
+			$(function(){
+				$("#barcode").focus();
+				$('#truePrice').mask("#.##0,00", {reverse: true});
+				$('.desconto').mask("#.##0,00", {reverse: true});
+				$("#quantity").on("change", function(){
+					if($(this).val() < 1 || $(this).val() == ""){
+						$(this).val(1);
+					}
+				})	
+				
+				$("#barcode").on("blur", function(){
+					var barcode = $("#barcode").val();
+					var quantity = $("#quantity").val();
+					if(barcode == ""){
+						barcode = "...";
+					}
+					if(quantity == ""){
+						quantity = "...";
+					}
+					$.ajax({
+						url:[[@{'/rest/cashier/product/'}]]+quantity+"/"+barcode,
+						method: 'GET',
+						success:function(result){
+							var product;
+							if(result != null && result != ""){
+								json = JSON.stringify(result);
+								product = JSON.parse(json);
+								setValues(product);
+								appendList(product);
+								sumAll([[@{'/rest/cashier/sumAll/'}]])
+							}
+						}
+					})
+					$("#barcode").val("");
+					$("#quantity").val(1);
+				})				
+			})
+			
+			function setValues(product){
+				$("#description").text(product.description);
+				$("#single-price").text("R$: "+product.singlePrice);
+				$("#total-price").text("R$: "+product.totalPrice);
+				$("#total-quantity").text("X "+product.quantity);
+			}
+		
+			function appendList(product){
+				var classe = "product-item";
+				var cont = "<td class='col-xs-1 text-center' id='contador''>"+contador+"</td>";
+				var descr = "<td class='col-xs-4 text-center' id='description"+product.id+"'>"+product.description+"</td>";
+				var singlePrice = "<td class='col-xs-2 text-center' id='single-price"+product.id+"'>"+product.singlePrice+"</td>";
+				var quantity = "<td class='col-xs-1 text-center' id='total-quantity"+product.id+"'>"+product.quantity+"</td>";
+				var totalPrice = "<td class='col-xs-2 text-center total-price' id='total-price"+product.id+"'>"+product.totalPrice+"</td>";
+				var del = "<td class='col-xs-2 text-center'><button onclick='deleteProuct("+product.id+contador+")' class='logus' style='color:white'><i class=' mdi mdi-delete'></i></button></td>";
+				var item = "<tr  id='"+product.id+contador+"'  class='"+classe+"' data-id='"+product.id+"' data-barcode='"+product.barcode+"'>'"+cont+descr+singlePrice+quantity+totalPrice+del+"'</tr>"
+				$("#list-products").append(item);
+				scroll();
+				contador ++;
+			}
+			
+			function scroll() {
+				  var objScrDiv = document.getElementById("list-product-scroll");
+				  objScrDiv.scrollTop = objScrDiv.scrollHeight;
+				}
+			
+			function editItemTable(DOM, product){
+				$(DOM).find("#description"+product.id).text(product.description);
+				$(DOM).find("#single-price"+product.id).text(product.singlePrice);
+				$(DOM).find("#total-price"+product.id).text(product.totalPrice);
+				$(DOM).find("#total-quantity"+product.id).text(product.quantity);
+			}
+			
+			function deleteProuct(productId){
+				$("#"+productId).remove();
+				sumAll([[@{'/rest/cashier/sumAll/'}]])
+				$("#barcode").focus();
+			}
+			
+			function sumAll(url){
+				var values = [];
+				if($(".total-price").length <= 0){
+					$("#total").text("R$: 00,00");
+					$(".total-pagamento").text("R$: 00,00");
+				}else{
+					$(".total-price").each(function(){
+						var value = $(this).text();
+						value = value.split(".").join("").replace(",",".");
+						values.push(value);
+					})
+					$.ajax({
+						url:url+values,
+						method: 'GET',
+						success: function(result){
+							$("#total").text("R$: "+result);
+							$(".total-pagamento").text("R$: "+result);
+							
+						}
+					})
+				}
+			}
+			
+			
+			function done(DOM){
+				var listProduct = [];
+				$(".product-item").each(function(){
+					var id = $(this).attr("data-id");
+					var quantity = $(this).find("#total-quantity"+id).text();
+					var obj = id+"-"+quantity;
+					listProduct.push(obj);
+				})
+				var formpayment = $(DOM).attr('data-payment');
+				if(formpayment == "Cartão"){
+					formpayment = formpayment+" de "+$("[name='cartao']:checked").val()
+				}
+				$("#formPayment").val(formpayment);
+				if($(DOM).parent().parent().parent().find(".desconto-val").text() != "R$ 0"){
+					var total = $(DOM).parent().parent().parent().find(".desconto-val").text().replace("R$ ", "");
+					desconto = $(DOM).parent().parent().parent().find(".desconto").val();
+					$("#total-payment").val(total);
+					$("#desconto").val(desconto);
+				}else{
+					$("#total-payment").val($("#total").text());
+				}
+				$("#print").val($(DOM).attr('data-print'));
+				$("#list").val(listProduct);
+				$("#form").attr("action", $(DOM).attr('data-url'));
+				$("#form").submit();
+			}
+			
+			
+			function calcGain(DOM){
+				var price;
+				if($(DOM).parent().parent().parent().find(".desconto-val").text() != "R$ 0"){
+					var price = $(DOM).parent().parent().parent().find(".desconto-val").text();
+					price = price.replace("R$:","").trim();
+					price = price.split(".").join("");
+					price = price.replace(",", ".");
+					if(price == ""){
+						price = "0";
+					}
+				}else{
+					price = $("#total").text();
+					price = price.replace("R$:","").trim();
+					price = price.split(".").join("");
+					price = price.replace(",", ".");
+					if(price == ""){
+						price = "0";
+					}
+				}
+				var trueprice = $('#truePrice').val();
+				trueprice = trueprice.split(".").join("");
+				trueprice = trueprice.replace(",", ".");
+				if(trueprice == ""){
+					trueprice = "0";
+					 $('#truePrice').val("");
+					 $("#gain").text("R$ 00,00");
+					 return;
+				}
+				
+				$.ajax({
+					url:[[@{'/product/calc/troco/'}]]+price+"/"+trueprice,
+					success:function(result){
+						$("#gain").text("R$: "+result);
+					}
+				})
+			}
+			
+			function calcDesconto(DOM){
+				var price = $("#total").text();
+				price = price.replace("R$:","").trim();
+				price = price.split(".").join("");
+				price = price.replace(",", ".");
+				if(price == ""){
+					price = "0";
+					return;
+				}
+				var trueprice = $(DOM).parent().parent().find(".desconto").val();
+				trueprice = trueprice.split(".").join("");
+				trueprice = trueprice.replace(",", ".");
+				if(trueprice == ""){
+					trueprice = "0";
+					return;
+				}
+				
+				
+				
+				$.ajax({
+					url:[[@{'/product/calc/desconto/'}]]+trueprice+"/"+price,
+					success:function(result){
+						$(".desconto-val").text("R$: "+result);
+						$(".total-desconto").css("display","block")
+					}
+				})
+				
+			}
+			
+			function resetDesconto(DOM){
+				if($(DOM).val() == ""){
+					$(".desconto-val").text("R$ 0");
+					$(".total-desconto").css("display","none")
+				}
+				
+			}
+			
+			
+			function putFocus(){
+				$('#truePrice').focus();
+			}
+			
+			function setProduct(){
+				var barcode = $(".selectpicker").val()
+				if(barcode != "..."){
+					$("#barcode").val(barcode);
+					$("#barcode").blur();
+				}
+				$(".selectpicker").val("...");
+				$("#barcode").focus();
+			}
+			
+		</script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+

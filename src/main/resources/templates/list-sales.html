@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Lista de usuarios</title>
+        <th:block th:replace="/fragment/pattern-head :: pattern-head"></th:block>
+        <style>
+        	#table{
+        		width: 100%;
+        	}
+        	#table td{
+        		padding:10px;
+        	}
+        	#table th{
+        		padding:10px;
+        	}
+        	
+        	
+        </style>
+  		<link rel="stylesheet" th:href="@{'/plugins/accordion/css/acccordion.css'}">
+    </head>
+    <body>
+		<th:block th:replace="/fragment/top-menu :: top-menu"></th:block>
+		<div th:if="${empty}">
+			<div class="alert alert-danger alert-dismissible fade in" role="alert">
+               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                   <span aria-hidden="true">×</span>
+               </button>
+               <strong>Ops!</strong> Nenhum dado foi encontrado
+           </div>
+		</div>
+		<div class="card-box">
+			<form id="form" th:action="@{'/sales'}">
+				<div class="row">
+					<div class="col-xs-5">
+					<div class="col-xs-2"></div>
+						<div class="col-xs-3">
+							<label>Data inicial:</label>
+						</div>
+						<div class="col-xs-6">
+							<input type="date" name="dateInicial" required="required">
+						</div>
+					</div>
+					<div class="col-xs-5">
+						<div class="col-xs-2"></div>
+						<div class="col-xs-3">
+							<label>Data final:</label>
+						</div>
+						<div class="col-xs-6">
+							<input type="date" name="dateFinal" required="required">
+						</div>
+					</div>
+					<div class="col-xs-2">
+						<input type="submit" class="logus" style="color:#FFF" value="Buscar"> 
+					</div>
+				</div>
+			</form>
+			<form id="extornar" th:action="@{'/sales/extornar'}">
+				<input type="hidden" id="prods" name="prods">
+				<input type="hidden" id="saleId"  name="saleId">
+			</form>
+			<div th:if="${listSales}">
+				<div id="list" class="row container" th:if="${listSales.size()} > 0">
+					<h2 class="text-center">Historico de Vendas</h2>
+					<div class="m-b-20 row">
+						<div class="col-xs-4">
+							<label>Buscar:</label>
+							<input id="myInput" type="text" class="form-control">
+						</div>
+					</div>
+					<div class="row col-xs-12 logus" style="color:white">
+						<div class="col-xs-3 text-center">Data</div> 
+						<div class="col-xs-3 text-center">Usuário</div>
+						<div class="col-xs-2 text-center">Valor da venda</div>
+						<div class="col-xs-3 text-center">Forma de Pagamento</div>
+					</div>
+					<div class="accordion col-xs-12" th:each=" sale : ${listSales}">
+						 <div style="cursor:pointer" class="row">
+							<div class="col-xs-3 text-center" th:text="${@convertDate.LocalDateTimeToString(sale.time, 'dd-MM-yyyy HH:mm:ss')}"></div>
+							<div class="col-xs-3 text-center" th:text="${sale.userName}"></div>
+							<div class="col-xs-2 text-center" th:text="${sale.price}"></div>
+							<div class="col-xs-3 text-center" th:text="${sale.payment}"></div>
+						</div>
+						<div>
+							<div class="logus row" style="color:white">
+								<div class="col-xs-3 text-center">Produto</div>
+								<div class="col-xs-3 text-center">Preço</div>
+								<div class="col-xs-2 text-center">Validade</div>
+								<div class="col-xs-1 text-center">Quantidade</div>
+								<div class="col-xs-2 text-center">Lucro por unidade</div>
+								<div class="col-xs-1 text-center"><button onclick="extornar(this)" th:attr="data-list=${sale.listProduct}, data-id=${sale.id}" style="color:black">Estornar</button></div>
+							</div>
+							<div th:if="${sale.listProduct}" th:each="product :${sale.listProduct}" class="row">
+								<div class="col-xs-3 text-center" th:text="${product.description}"></div>
+								<div class="col-xs-3 text-center" th:text="${'R$: '}+${@convertMoney.BigDecimalToString(product.price)}"></div>
+								<div class="col-xs-2 text-center" th:text="${@convertDate.LocalDateTimeToString(product.validity, 'dd/MM/yyyy')}"></div>
+								<div class="col-xs-1 text-center"  th:text="${product.quantity}"></div>
+								<div class="col-xs-2 text-center" th:text="${'R$: '}+${product.gain}"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row card-box" th:if="${total}" th:unless="${empty}">
+			<h4 class="text-center" th:text="${'Total entre os dia(s) '}+${@convertDate.LocalDateTimeToString(total.dtInitial, 'dd/MM/yyyy')}+${' - '}+${@convertDate.LocalDateTimeToString(total.dtFinal, 'dd/MM/yyyy')} "></h4>
+				<div class="col-xs-5 text-center">
+					<h4 th:text="${'Total da venda: R$ '}+${@convertMoney.BigDecimalToString(total.totalPrice)}"></h4>
+				</div>
+				<div class="col-xs-5 text-center">
+					<h4 th:text="${'Total de lucro: R$ '}+${@convertMoney.BigDecimalToString(total.totalGain)}"></h4>
+				</div>
+				<div class="col-xs-2 text-center">
+					<button th:attr="data-dtInitial=${@convertDate.LocalDateTimeToString(total.dtInitial, 'dd-MM-yyyy')}, data-dtFinal=${@convertDate.LocalDateTimeToString(total.dtFinal, 'dd-MM-yyyy')}, data-venda=${@convertMoney.BigDecimalToString(total.totalPrice)}, data-lucro=${@convertMoney.BigDecimalToString(total.totalGain)}" onclick="doprint(this)" class="logus" style="color:#FFF">Imprimir</button>
+				</div>
+			</div>
+		<th:block th:replace="/fragment/pattern-body :: pattern-body"></th:block>
+  		<script th:src="@{'/plugins/accordion/js/accordion.js'}"></script>
+		<script type="text/javascript" th:inline="javascript">
+			var ex = [[ex]];
+			$(document).ready( function () {
+				
+				$( ".accordion" ).accordion({
+				      collapsible: true,
+				      active: false
+				    });
+				$("#myInput").on("keyup", function() {
+				   var value = $(this).val().toLowerCase();
+				   $("#list .accordion").filter(function() {
+				     $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+				   });
+				});
+				
+			});
+			
+			function extornar(DOM){
+				$("#prods").val($(DOM).attr("data-list"));
+				$("#saleId").val($(DOM).attr("data-id"));
+				$("#extornar").submit();
+			}
+			
+			function doprint(DOM){
+				var dtI = $(DOM).attr("data-dtInitial");
+				var dtF = $(DOM).attr("data-dtFinal");
+				var venda = $(DOM).attr("data-venda");
+				var lucro = $(DOM).attr("data-lucro");
+				
+				$.ajax({
+				 method: "GET",
+				 url: [[@{'/sales/print/'}]]+dtI+"/"+dtF+"/"+venda+"/"+lucro
+				})
+			}
+			
+			
+			
+		</script>
+    </body>
+</html>

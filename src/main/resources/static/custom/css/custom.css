@@ -1,0 +1,40 @@
+.header a{
+	color: inherit; 
+}
+
+.header{
+	border-radius: 10px;
+    height: 60px;
+    line-height: 2.9;
+    color: #e8e3e3 !important;
+}
+.fz {
+	transition: 0.5s;
+	font-size: 20px
+}
+.fz:hover {
+	color: #FFF;
+}
+.header  .btn:click{
+	color: white;
+}
+.active{
+	background-color: #e8e3e3;
+	color: #505458;
+}
+.logus{
+	 background-image: linear-gradient(rgb(95,55,64), rgb(58,58,60));
+}
+
+.btn-login{
+	transition: 0.5;
+	background-color:rgb(95,55,64);
+	color:#EEE;
+}
+.btn-login:hover{
+	background-color:rgb(58,58,60);
+	color:#FFF;
+}
+
+
+
